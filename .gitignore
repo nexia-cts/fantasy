@@ -11,7 +11,10 @@ classes/
 
 # idea
 
-.idea/
+.idea/*
+!.idea/codeStyles
+!.idea/inspectionProfiles
+
 *.iml
 *.ipr
 *.iws
@@ -24,17 +27,11 @@ bin/
 .classpath
 .project
 
-# macos
-
-*.DS_Store
-
 # fabric
 
 run/
 
-# java
+ci_version.json
 
-hs_err_*.log
-replay_*.log
-*.hprof
-*.jfr
+# Why though? I don't know
+/logs/latest.log
