@@ -123,6 +123,23 @@ public final class Fantasy {
     }
 
     /**
+     * Creates a new temporary world with the given {@link RuntimeWorldConfig} that will not be saved and will be
+     * deleted when the server exits.
+     * <p>
+     * The created world is returned asynchronously through a {@link RuntimeWorldHandle}.
+     * This handle can be used to acquire the {@link ServerWorld} object through {@link RuntimeWorldHandle#asWorld()},
+     * as well as to delete the world through {@link RuntimeWorldHandle#delete()}.
+     *
+     * @param config the config with which to construct this temporary world
+     * @param identifier the unique identifier
+     * @return a future providing the created world
+     */
+    public RuntimeWorldHandle openTemporaryWorld(RuntimeWorldConfig config, Identifier identifier) {
+        RuntimeWorld world = this.addTemporaryWorld(config, identifier);
+        return new RuntimeWorldHandle(this, world);
+    }
+
+    /**
      * Gets or creates a new persistent world with the given identifier and {@link RuntimeWorldConfig}. These worlds
      * will be saved to disk and can be restored after a server restart.
      * <p>
@@ -139,6 +156,9 @@ public final class Fantasy {
      * @param config the config with which to construct this persistent world
      * @return a future providing the created world
      */
+
+
+
     public RuntimeWorldHandle getOrOpenPersistentWorld(Identifier key, RuntimeWorldConfig config) {
         RegistryKey<World> worldKey = RegistryKey.of(Registry.DIMENSION, key);
 
@@ -159,6 +179,18 @@ public final class Fantasy {
 
     private RuntimeWorld addTemporaryWorld(RuntimeWorldConfig config, String temporaryWorldKey) {
         RegistryKey<World> worldKey = RegistryKey.of(Registry.DIMENSION, generateTemporaryWorldKey(temporaryWorldKey));
+
+        try {
+            LevelStorage.Session session = this.serverAccess.getSession();
+            FileUtils.forceDeleteOnExit(session.getWorldDirectory(worldKey));
+        } catch (IOException ignored) {
+        }
+
+        return this.worldManager.add(worldKey, config, RuntimeWorld.Style.TEMPORARY);
+    }
+
+    private RuntimeWorld addTemporaryWorld(RuntimeWorldConfig config, Identifier identifier) {
+        RegistryKey<World> worldKey = RegistryKey.of(Registry.DIMENSION, identifier);
 
         try {
             LevelStorage.Session session = this.serverAccess.getSession();
