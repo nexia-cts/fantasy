@@ -1,9 +1,6 @@
 plugins {
-  id 'fabric-loom' version '0.5-SNAPSHOT'
-  id 'maven-publish'
+  id 'fabric-loom' version '1.1-SNAPSHOT'
 }
-
-def env = System.getenv()
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
@@ -11,10 +8,6 @@ targetCompatibility = JavaVersion.VERSION_1_8
 archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
-
-minecraft {
-  accessWidener = file("src/main/resources/fantasy.accesswidener")
-}
 
 repositories {
   maven { url = "https://jitpack.io/" }
@@ -26,22 +19,19 @@ dependencies {
   modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
   modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+}
 
-  modRuntime("com.github.SuperCoder7979:databreaker:0.2.6") {
-    exclude module: "fabric-loader"
-  }
+
+loom {
+  accessWidenerPath = file("src/main/resources/fantasy.accesswidener")
 }
 
 processResources {
   inputs.property "version", project.version
+  filteringCharset "UTF-8"
 
-  from(sourceSets.main.resources.srcDirs) {
-    include "fabric.mod.json"
+  filesMatching("fabric.mod.json") {
     expand "version": project.version
-  }
-
-  from(sourceSets.main.resources.srcDirs) {
-    exclude "fabric.mod.json"
   }
 }
 
@@ -56,31 +46,4 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 
 jar {
   from "LICENSE"
-}
-
-publishing {
-  publications {
-    mavenJava(MavenPublication) {
-      artifact(remapJar) {
-        builtBy remapJar
-      }
-      artifact(sourcesJar) {
-        builtBy remapSourcesJar
-      }
-    }
-  }
-
-  repositories {
-    if (env.MAVEN_URL) {
-      maven {
-        credentials {
-          username env.MAVEN_USERNAME
-          password env.MAVEN_PASSWORD
-        }
-        url env.MAVEN_URL
-      }
-    } else {
-      mavenLocal()
-    }
-  }
 }

@@ -100,7 +100,25 @@ public final class Fantasy {
      * @return a future providing the created world
      */
     public RuntimeWorldHandle openTemporaryWorld(RuntimeWorldConfig config) {
-        RuntimeWorld world = this.addTemporaryWorld(config);
+        RuntimeWorld world = this.addTemporaryWorld(config, Fantasy.ID);
+        return new RuntimeWorldHandle(this, world);
+    }
+
+    /**
+     * Creates a new temporary world with the given {@link RuntimeWorldConfig} that will not be saved and will be
+     * deleted when the server exits.
+     * <p>
+     * The created world is returned asynchronously through a {@link RuntimeWorldHandle}.
+     * This handle can be used to acquire the {@link ServerWorld} object through {@link RuntimeWorldHandle#asWorld()},
+     * as well as to delete the world through {@link RuntimeWorldHandle#delete()}.
+     *
+     * @param config the config with which to construct this temporary world
+     * @param id the id which appears in the world, aka. id:name
+     * @return a future providing the created world
+     */
+
+    public RuntimeWorldHandle openTemporaryWorld(RuntimeWorldConfig config, String id) {
+        RuntimeWorld world = this.addTemporaryWorld(config, id);
         return new RuntimeWorldHandle(this, world);
     }
 
@@ -139,8 +157,8 @@ public final class Fantasy {
         return this.worldManager.add(worldKey, config, RuntimeWorld.Style.PERSISTENT);
     }
 
-    private RuntimeWorld addTemporaryWorld(RuntimeWorldConfig config) {
-        RegistryKey<World> worldKey = RegistryKey.of(Registry.DIMENSION, generateTemporaryWorldKey());
+    private RuntimeWorld addTemporaryWorld(RuntimeWorldConfig config, String temporaryWorldKey) {
+        RegistryKey<World> worldKey = RegistryKey.of(Registry.DIMENSION, generateTemporaryWorldKey(temporaryWorldKey));
 
         try {
             LevelStorage.Session session = this.serverAccess.getSession();
@@ -207,8 +225,8 @@ public final class Fantasy {
         return temporaryWorlds;
     }
 
-    private static Identifier generateTemporaryWorldKey() {
+    private static Identifier generateTemporaryWorldKey(String id) {
         String key = RandomStringUtils.random(16, "abcdefghijklmnopqrstuvwxyz0123456789");
-        return new Identifier(Fantasy.ID, key);
+        return new Identifier(id, key);
     }
 }
