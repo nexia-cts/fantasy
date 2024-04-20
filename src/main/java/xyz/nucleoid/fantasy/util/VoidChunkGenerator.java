@@ -1,7 +1,6 @@
 package xyz.nucleoid.fantasy.util;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructureManager;
 import net.minecraft.util.math.BlockPos;
@@ -9,6 +8,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.util.registry.RegistryLookupCodec;
 import net.minecraft.world.*;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
@@ -27,23 +27,27 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public class VoidChunkGenerator extends ChunkGenerator {
-    public static final Codec<VoidChunkGenerator> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Biome.REGISTRY_CODEC.stable().fieldOf("biome").forGetter(g -> g.biome)
-    ).apply(instance, instance.stable(VoidChunkGenerator::new)));
+    public static final Codec<VoidChunkGenerator> CODEC;
 
-    private final Supplier<Biome> biome;
+    private final Registry<Biome> biomeRegistry;
 
-    public VoidChunkGenerator(Supplier<Biome> biome) {
+    public VoidChunkGenerator(Supplier<Biome> biome, Registry<Biome> biomeRegistry) {
         super(new FixedBiomeSource(biome), new StructuresConfig(Optional.empty(), Collections.emptyMap()));
-        this.biome = biome;
+        this.biomeRegistry = biomeRegistry;
     }
 
     public VoidChunkGenerator(Registry<Biome> biomeRegistry) {
-        this(biomeRegistry, BiomeKeys.THE_VOID);
+        super(new FixedBiomeSource(biomeRegistry.getOrThrow(BiomeKeys.THE_VOID)), new StructuresConfig(Optional.empty(), Collections.emptyMap()));
+        this.biomeRegistry = biomeRegistry;
     }
 
-    public VoidChunkGenerator(Registry<Biome> biomeRegistry, RegistryKey<Biome> biome) {
-        this(() -> biomeRegistry.get(biome));
+    public VoidChunkGenerator(RegistryKey<Biome> biome, Registry<Biome> biomeRegistry) {
+        super(new FixedBiomeSource(biomeRegistry.getOrThrow(biome)), new StructuresConfig(Optional.empty(), Collections.emptyMap()));
+        this.biomeRegistry = biomeRegistry;
+    }
+
+    public Registry<Biome> getBiomeRegistry() {
+        return this.biomeRegistry;
     }
 
     @Override
@@ -103,5 +107,9 @@ public class VoidChunkGenerator extends ChunkGenerator {
     @Override
     public boolean isStrongholdStartingChunk(ChunkPos chunkPos) {
         return false;
+    }
+
+    static {
+        CODEC = RegistryLookupCodec.of(Registry.BIOME_KEY).xmap(VoidChunkGenerator::new, VoidChunkGenerator::getBiomeRegistry).stable().codec();
     }
 }
