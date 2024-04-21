@@ -13,6 +13,7 @@ import net.minecraft.world.*;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.biome.source.BiomeAccess;
+import net.minecraft.world.biome.source.BiomeSource;
 import net.minecraft.world.biome.source.FixedBiomeSource;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.GenerationStep;
@@ -27,45 +28,28 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public class VoidChunkGenerator extends ChunkGenerator {
-    public static final Codec<VoidChunkGenerator> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Biome.REGISTRY_CODEC.stable().fieldOf("biome").forGetter(g -> g.biome)
-    ).apply(instance, instance.stable(VoidChunkGenerator::new)));
-
-    private final Supplier<Biome> biome;
-
-    public VoidChunkGenerator(Supplier<Biome> biome) {
-        super(new FixedBiomeSource(biome), new StructuresConfig(Optional.empty(), Collections.emptyMap()));
-        this.biome = biome;
-    }
-
-    public VoidChunkGenerator(Registry<Biome> biomeRegistry) {
-        this(biomeRegistry, BiomeKeys.THE_VOID);
-    }
-
-    public VoidChunkGenerator(Registry<Biome> biomeRegistry, RegistryKey<Biome> biome) {
-        this(() -> biomeRegistry.get(biome));
+    public VoidChunkGenerator(BiomeSource biomeSource, StructuresConfig structuresConfig) {
+        super(biomeSource, structuresConfig);
     }
 
     @Override
     protected Codec<? extends ChunkGenerator> getCodec() {
-        return CODEC;
+        return null;
     }
 
     @Override
     public ChunkGenerator withSeed(long seed) {
-        return this;
+        return null;
     }
 
     @Override
-    public void setStructureStarts(DynamicRegistryManager registryManager, StructureAccessor accessor, Chunk chunk, StructureManager manager, long seed) {
-    }
+    public void buildSurface(ChunkRegion region, Chunk chunk) {
 
-    @Override
-    public void addStructureReferences(StructureWorldAccess world, StructureAccessor accessor, Chunk chunk) {
     }
 
     @Override
     public void populateNoise(WorldAccess world, StructureAccessor accessor, Chunk chunk) {
+
     }
 
     @Override
@@ -76,32 +60,5 @@ public class VoidChunkGenerator extends ChunkGenerator {
     @Override
     public BlockView getColumnSample(int x, int z) {
         return null;
-    }
-
-    @Override
-    public void buildSurface(ChunkRegion region, Chunk chunk) {
-    }
-
-    @Override
-    public void carve(long seed, BiomeAccess access, Chunk chunk, GenerationStep.Carver carver) {
-    }
-
-    @Override
-    public void generateFeatures(ChunkRegion region, StructureAccessor accessor) {
-    }
-
-    @Override
-    public void populateEntities(ChunkRegion region) {
-    }
-
-    @Nullable
-    @Override
-    public BlockPos locateStructure(ServerWorld world, StructureFeature<?> feature, BlockPos center, int radius, boolean skipExistingChunks) {
-        return null;
-    }
-
-    @Override
-    public boolean isStrongholdStartingChunk(ChunkPos chunkPos) {
-        return false;
     }
 }
