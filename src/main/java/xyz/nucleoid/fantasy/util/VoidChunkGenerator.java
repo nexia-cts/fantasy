@@ -58,10 +58,6 @@ public class VoidChunkGenerator extends ChunkGenerator {
     public void populateBiomes(Registry<Biome> biomeRegistry, Chunk chunk) {
         ChunkPos chunkPos = chunk.getPos();
         ((ProtoChunk)chunk).setBiomes(new BiomeArray(this.biomeRegistry, chunkPos, this.biomeSource));
-
-        for (Biome biome : this.getBiomeSource().getBiomes()) {
-            System.out.println(biome.getClass());
-        }
     }
 
     @Override
